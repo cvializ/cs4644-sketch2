@@ -12,70 +12,50 @@ public class chat {
 
     public static void main(String[] args) throws Exception {
         System.out.println("1");
-        voce.SpeechInterface.init("C:/voce-0.9.1/lib", true, true, "src/grammar", "digits");
+        voce.SpeechInterface.init("C:/voce-0.9.1/lib", true, true, "src/grammar", "tree");
         ChatterBotFactory factory = new ChatterBotFactory();
 
         System.out.println("3");
         ChatterBot bot2 = factory.create(ChatterBotType.PANDORABOTS, "b0dafd24ee35a477");
         ChatterBotSession bot2session = bot2.createSession();
         System.out.println("4");
-        VoiceManager man = VoiceManager.getInstance();
-//        Voice voices[] = man.getVoices();
-//        for (Voice k : voices)
-//        {
-//            System.out.println(k.getName());
-//        }
 
-        Voice v = man.getVoice("kevin16");
-        AudioSystem a;
+        VoiceManager voiceManager = VoiceManager.getInstance();
+        Voice voice = voiceManager.getVoice("kevin16");
+        voice.allocate();
 
-        if (AudioSystem.isLineSupported(Port.Info.MICROPHONE)) {
-
-                Port line = (Port) AudioSystem.getLine(
-                    Port.Info.MICROPHONE);
-                System.out.println(line.getLineInfo());
-                Control c[] = line.getControls();
-                for (Control o : c)
-                {
-                    System.out.println(o.getType().toString());
-                }
-        }
-
-        v.allocate();
-        Scanner in = new Scanner(System.in);
-        String s = "Hello";
-        //
+        String call = "Hello";
+        String response;
         while (true)
         {
+            // It's speaking, so mute it so the voice recognizer doesn't
+            // pick up on the microphone
+            MicrophoneUtility.mute();
 
-           // System.out.println("bot1> " + s);
-            //v.speak(s);
-            s = bot2session.think(s);
-            if (s.contains("<a"))
+            response = bot2session.think(call);
+            if (response.contains("<a"))
             {
-                int i = s.indexOf("</a>");
-                s = s.substring(i + 8);
+                int i = response.indexOf("</a>");
+                response = response.substring(i + 8);
             }
 
-            System.out.println("bot> " + s);
-            voce.SpeechInterface.synthesize(s);
-           v.speak(s);
-           s = null;
+            System.out.println("bot> " + response);
+            //voce.SpeechInterface.synthesize(response);
 
-           MicrophoneUtility.unmute();
-           while (true)
-           {
-               s = "";
-               s = voce.SpeechInterface.popRecognizedString();
-               if(s != "")
-               {
-                   System.out.println(s);
-                   break;
-               }
-           }
-           MicrophoneUtility.mute();
-
-           // s = in.nextLine();
+            synchronized(voice) {
+                voice.speak(response);
+            }
+            // It's listening
+            MicrophoneUtility.unmute();
+            while (true)
+            {
+                call = voce.SpeechInterface.popRecognizedString();
+                if(call != "")
+                {
+                    System.out.println(call);
+                    break;
+                }
+            }
         }
     }
 }

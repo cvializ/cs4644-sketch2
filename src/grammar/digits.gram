@@ -6,6 +6,6 @@
 
 grammar digits;
 
-public <miscellaneous> = (quit);
+/*public <miscellaneous> = (quit);*/
 
-public <numbers> = (oh | zero | one | two | three | four | five | six | seven | eight | nine) * ;
+public <words> = (do | you | like | pizza | why | talk | to | me | what | is | family | like) * ;
